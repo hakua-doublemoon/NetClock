@@ -30,11 +30,6 @@ public class WindowController : MonoBehaviour
     [DllImport("user32.dll", EntryPoint = "SetLayeredWindowAttributes")]
     private static extern Boolean SetLayeredWindowAttributes(int hwnd, uint crKey, byte bAlpha, uint dwFlags);
 
-    // assorted constants needed
-    public static int GWL_STYLE = -16;
-    public static int WS_BORDER = 0x00800000; //window with border
-    public static int WS_DLGFRAME = 0x00400000; //window with double border but no title
-
     public void exec()
     {
         var os = Environment.OSVersion;
@@ -43,22 +38,27 @@ public class WindowController : MonoBehaviour
         if (m_ver != 10) {
             return;
         }
-        int WS_CAPTION;
-        WS_CAPTION = WS_BORDER | WS_DLGFRAME;
 
         var window = FindWindow(null, windowName);
 
         {
+            const int GWL_STYLE = -16;
+            const int WS_BORDER = 0x00800000; //window with border
+            const int WS_DLGFRAME = 0x00400000; //window with double border but no title
+
             int style = GetWindowLong(window, GWL_STYLE);
+            int WS_CAPTION;
+            WS_CAPTION = WS_BORDER | WS_DLGFRAME;
             style &= ~WS_CAPTION;
             SetWindowLong(window, GWL_STYLE, style);
             SetWindowPos(window, 0, x, y, width, height, width * height == 0 ? 1 : 0);
         }
         {
+            const int GWL_EXSTYLE = -20;
             const int WS_EX_LAYERED = 0x80000;
 
-            int style = GetWindowLong(window, -20);
-            SetWindowLong(window, -20, style | WS_EX_LAYERED);
+            int style = GetWindowLong(window, GWL_EXSTYLE);
+            SetWindowLong(window, GWL_EXSTYLE, style | WS_EX_LAYERED);
 
             int handle = GetForegroundWindow();
             SetLayeredWindowAttributes(handle, 0x00000000, 0, 0x00000001);
