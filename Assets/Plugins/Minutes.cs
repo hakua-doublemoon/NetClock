@@ -25,30 +25,12 @@ public class Minutes : MonoBehaviour
 
     int step_get()
     {
-#if false
-        if (!is_debug_mode) {
-            return DateTime.Now.Minute;
-        } else {
-            return last_step;
-        }
-#else
         return last_step;
-#endif
     }
 
     int hour_get()
     {
-#if false
-        if (!is_debug_mode) {
-            int hour = DateTime.Now.Hour % 12;
-            last_hour = hour;
-            return hour;
-        } else {
-            return last_hour;
-        }
-#else
         return last_hour;
-#endif
     }
 
     void time_signal(int hour)
@@ -108,20 +90,26 @@ public class Minutes : MonoBehaviour
             //Debug.Log("> " + DateTime.Now.Second);
             return;
         }
+        // else -> 調整中はこまめにポーリングする
 
-        int curr_sec;
-        curr_sec = DateTime.Now.Second;
+        //int curr_sec;
+        //curr_sec = DateTime.Now.Second;
         (int hour, int min, int sec) = nict_get.date_get();
         if (min != -1) {
             last_step = min;
             last_hour = hour;
             //curr_sec = sec;
+            ellapsed = sec;
+
+            var rnd_gen = new System.Random();
+            adjust_time = rnd_gen.Next(0, adjust_interval);
         } else {
             if (is_ajusting) {
                 return;
             }
             last_step += 1;
             //curr_sec = DateTime.Now.Second;
+            ellapsed = 0;
             if (step_get() % adjust_interval == adjust_time) {
                 nict_get.exec();
                 is_ajusting = true; // ここではfalseのはず
@@ -137,7 +125,7 @@ public class Minutes : MonoBehaviour
 
         hand_long.minutes_set(step_get());
         hand_short.minutes_set(step_get(), hour_get());
-        ellapsed = curr_sec;
+        //ellapsed = curr_sec;
     }
 
     public void on_click()
@@ -148,7 +136,7 @@ public class Minutes : MonoBehaviour
         }
         //Debug.Log("minutes::on_click " + data.button.ToString());
         if (is_debug_mode) {
-            last_step = last_step + 1;
+            last_step += 1;
             if (last_step == 60) {
                 last_hour += 1;
                 last_step = 0;
@@ -156,9 +144,10 @@ public class Minutes : MonoBehaviour
             if (last_step == 0) {
                 time_signal(hour_get());
             }
+        } else {
+            nict_get.exec();
+            is_ajusting = true;
         }
-        nict_get.exec();
-        is_ajusting = true;
     }
 
     // -------------------------

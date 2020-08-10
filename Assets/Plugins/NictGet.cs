@@ -29,6 +29,7 @@ public class NictGet : MonoBehaviour
     int last_minu = -1;
     int last_hour = -1;
     int last_seco = -1;
+    bool is_connecting = false;
 
     IEnumerator GetRoutine()
     {
@@ -50,6 +51,7 @@ public class NictGet : MonoBehaviour
             last_hour = date.Hour;
             last_minu = date.Minute;
             last_seco = date.Second;
+            is_connecting = false;
             Debug.Log("[OK]" + st + " > " + last_hour + ":" + last_minu);
         }
     }
@@ -57,7 +59,7 @@ public class NictGet : MonoBehaviour
     public void exec()
     {
         Debug.Log("start get");
-        //last_sec = -1;
+        is_connecting = true;
         IEnumerator rou = GetRoutine();
         StartCoroutine(rou);
     }
@@ -67,9 +69,11 @@ public class NictGet : MonoBehaviour
         int ret_h = last_hour;
         int ret_m = last_minu;
         int ret_s = last_seco;
-        last_hour = -1;
-        last_minu = -1;
-        last_seco = -1;
+        if (!is_connecting) {
+            last_hour = -1;
+            last_minu = -1;
+            last_seco = -1;
+        }
         return (ret_h, ret_m, ret_s);
     }
 }
